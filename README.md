@@ -13,7 +13,9 @@ This repository contains the code used for the analysis detailed in the manuscri
 ## Contributors
 
 Ailith Ewing
+
 Alison Meynert
+
 Graeme Grimes
 
 <hr></hr>
