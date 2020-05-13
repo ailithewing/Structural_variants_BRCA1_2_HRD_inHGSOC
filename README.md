@@ -4,6 +4,8 @@ This repository is currently in development but will contain the code used for t
 
 **Structural variants at the BRCA1/2 loci are a common source of homologous repair deficiency in high grade serous ovarian carcinoma**
 
+[https://t.co/3zxGhHHw6m?amp=1]
+
 ## Contents include:
 
 - Commands used for primary processing of the WGS and RNAseq data
