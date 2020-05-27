@@ -87,3 +87,14 @@ Note again a different script for the AOCS samples.
 qsub -t 1-N verifybamid.sh config.sh <batch>_ids.txt <N/T>
 qsub -t 1-N verifybamid_AOCS.sh config.sh <batch>_ids.txt AOCS.<tumor/normal> <PrimaryTumour/NormalBlood>
 ```
+
+# FACETS - CNV/LOH and whole genome doubling
+
+Installed from [github](https://github.com/mskcc/facets).
+
+Create parameter files, TSV, 3 columns: patient id, path to normal BAM file, path to tumour BAM file. Samples with MCN>=2 fraction were considered to have undergone whole genome duplication.
+
+```
+qsub -t 1-N facets_snp_pileup.sh config.sh <batch>_params.txt pileups
+qsub -t 1-N facets.sh config.sh <batch>_ids.txt 500
+```
