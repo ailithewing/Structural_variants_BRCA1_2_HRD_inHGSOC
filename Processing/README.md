@@ -63,3 +63,18 @@ qsub -t 1-N filter_by_orientation_bias.sh config.sh <batch>_ids.txt
 
 Note: for the AOCS samples, use the script versions with suffix _AOCS.
 
+## Checking for sample mix-ups
+
+Bcbio uses Qsignature to generate VCFs of common SNPs for all samples, and the program can be used to check all these VCFs for sample mix-ups and to ensure that tumour-normal pairs are in fact from the same individual.
+
+```
+date=20180913
+cd variants/bcbio
+rsync `find . | grep qsig.vcf` ../../qc/qsignature/sample/
+cd ../../qc/qsignature
+java -Xmx4g -cp $BASE/software/qsignature/qsignature-0.1pre.jar org.qcmg.sig.SignatureCompareRelatedSimple -o $date.xml -log $date.log -d sample
+perl $SCRIPTS/parse_qsig_compare_xml.pl < $date.xml > $date.txt
+perl $SCRIPTS/best_match_per_qsig_file.pl < $date.txt | sort -u > $date.best_match_by_pair_id.txt
+```
+
+When samples are properly paired, the $date.best_match_by_pair.txt file will have 'match' in the 4th column (sample1, sample2, score, classification).
