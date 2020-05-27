@@ -78,3 +78,12 @@ perl $SCRIPTS/best_match_per_qsig_file.pl < $date.txt | sort -u > $date.best_mat
 ```
 
 When samples are properly paired, the $date.best_match_by_pair.txt file will have 'match' in the 4th column (sample1, sample2, score, classification).
+
+## Checking for sample contamination
+
+Note again a different script for the AOCS samples.
+
+```
+qsub -t 1-N verifybamid.sh config.sh <batch>_ids.txt <N/T>
+qsub -t 1-N verifybamid_AOCS.sh config.sh <batch>_ids.txt AOCS.<tumor/normal> <PrimaryTumour/NormalBlood>
+```
