@@ -1,0 +1,14 @@
+details:
+- algorithm:
+    align_split_size: false
+    aligner: bwa
+    platform: illumina
+    quality_format: standard
+    mark_duplicates: true
+    recalibrate: true
+    realign: false
+    tools_on: gatk4
+  analysis: variant2
+  genome_build: hg38
+upload:
+  dir: /exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/alignments

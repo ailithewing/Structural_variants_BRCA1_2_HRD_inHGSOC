@@ -1,0 +1,22 @@
+details:
+- algorithm:
+    aligner: false
+    mark_duplicates: false
+    remove_lcr: true
+    mixup_check: qsignature
+    variantcaller: 
+      somatic: [vardict, strelka2, mutect2]
+      germline: [gatk-haplotype]
+    min_allele_fraction: 5
+    indelcaller: false
+    svcaller: [cnvkit, manta, lumpy]
+    svprioritize: cancer/az300
+    effects: vep
+    effects_transcripts: canonical
+    ensemble:
+      numpass: 2
+      use_filtered: false
+    tools_off: [gemini, lumpy-genotype]
+    tools_on: [gatk4, lumpy_usecnv]
+  analysis: variant2
+  genome_build: hg38
