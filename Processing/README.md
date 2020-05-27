@@ -4,7 +4,7 @@ The file config.sh referred to as a parameter for the job submission scripts bel
 
 ## Alignment
 
-Using [https://bcbio-nextgen.readthedocs.io/en/latest/](bcbio 1.0.7): [configuration template](align.yaml).
+Using [bcbio 1.0.7](https://bcbio-nextgen.readthedocs.io/en/latest/): [configuration template](align.yaml).
 
 Preparing parameter files
 
@@ -32,7 +32,7 @@ qsub -t <X> bcbio_alignment.sh config.sh <batch>_ids.txt <type>
 		
 ## Variant calling
 
-Using [https://bcbio-nextgen.readthedocs.io/en/latest/](bcbio 1.0.7): [configuration template](variant.yaml).
+Using [bcbio 1.0.7](https://bcbio-nextgen.readthedocs.io/en/latest/): [configuration template](variant.yaml).
 
 Run the bcbio parameter preparation script using the <batch>.ids.txt file prepared for the alignment step.
 
