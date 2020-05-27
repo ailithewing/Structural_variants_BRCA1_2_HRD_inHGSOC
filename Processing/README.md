@@ -88,7 +88,7 @@ qsub -t 1-N verifybamid.sh config.sh <batch>_ids.txt <N/T>
 qsub -t 1-N verifybamid_AOCS.sh config.sh <batch>_ids.txt AOCS.<tumor/normal> <PrimaryTumour/NormalBlood>
 ```
 
-# FACETS - CNV/LOH and whole genome doubling
+## FACETS - CNV/LOH and whole genome doubling
 
 Installed from [github](https://github.com/mskcc/facets).
 
