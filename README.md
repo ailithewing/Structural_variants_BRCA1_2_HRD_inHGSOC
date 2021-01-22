@@ -1,8 +1,10 @@
 # Structural variants at BRCA1/2 in high grade serous ovarian carcinoma (HGSOC)
 
-This repository contains the code used for the analysis detailed in the manuscript:
+This repository is currently in development but will contain the code used for the analysis detailed in the manuscript:
 
 **Structural variants at the BRCA1/2 loci are a common source of homologous repair deficiency in high grade serous ovarian carcinoma**
+
+[https://t.co/3zxGhHHw6m?amp=1]
 
 ## Contents include:
 
