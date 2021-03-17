@@ -27,6 +27,16 @@ rev_char <- function(char) {
     })
 }
 
+get_match_length <- function(x, y) { 
+    min_length <- min(nchar(x), nchar(y))
+    if (min_length == 0) {
+        return(0) 
+    } else { 
+        return(sum(sapply(1:min_length, function(i) {
+            substr(x, 1, i) == substr(y, 1, i) 
+        })))
+    }
+}
 
 get_overlap_length <- function(seq1, seq2) {
   overlap_matrix <- sapply(1:nchar(seq1), function(i) {
@@ -53,7 +63,7 @@ parse_indel <- function(indel_vcf_path) {
             seqnames = gsub('24', 'Y', seqnames)
         )
 
- indels <- all_indels[all_indels$seqnames %in% seqlevels(GRCh38)
+    indels <- all_indels[all_indels$seqnames %in% seqlevels(GRCh38)
                          & nchar(all_indels$REF) > nchar(all_indels$ALT), ]
     return(indels)
 }
@@ -112,7 +122,7 @@ microhomology_summary <- function(indel_table) {
         max_match <- apply(cbind(three_prime, five_prime), 1, max)
 
         indel_table$microhomology_length <- max_match
-        indel_table$is_microhomology <- max_match > 0 & max_match < nchar(indel_table$deleted) #CHANGE THIS LINE - AILITH 
+        indel_table$is_microhomology <- max_match > 2
     } else {
         indel_table$microhomology_length <- numeric()
         indel_table$is_microhomology <- logical()

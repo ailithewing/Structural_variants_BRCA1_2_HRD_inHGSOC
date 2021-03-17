@@ -87,31 +87,33 @@ get_hrdetect_score <- function(hrd_table) {
     hrd_table$outcome = rbernoulli(n = dim(hrd_table)[1], p = 0.5)
   }
   hrdetect_model <- makeglm(
-    outcome ~ norm_deletion_microhomology_proportion +
-        norm_snv_signature_3 + 
-        norm_rearrangement_signature_3 +
-        norm_rearrangement_signature_5 + 
-        norm_hrd_score + 
-        norm_snv_signature_8,
+    outcome ~ deletion_microhomology_proportion +
+        snv_signature_3 + 
+        rearrangement_signature_3 +
+        rearrangement_signature_5 + 
+        hrd_score + 
+        snv_signature_8,
     family=binomial, data=hrd_table, 
     -3.364,
-    norm_deletion_microhomology_proportion = 2.398,
-    norm_snv_signature_3 = 1.611,
-    norm_rearrangement_signature_3 = 1.153,
-    norm_rearrangement_signature_5 = 0.847,
-    norm_hrd_score = 0.667,
-    norm_snv_signature_8 = 0.091
+    deletion_microhomology_proportion = 2.398,
+    snv_signature_3 = 1.611,
+    rearrangement_signature_3 = 1.153,
+    rearrangement_signature_5 = 0.847,
+    hrd_score = 0.667,
+    snv_signature_8 = 0.091
   )
   
   return(predict(hrdetect_model, newdata=hrd_table, type="response"))
 }
 
-#From HRDetect Supp table 14.
-brca_means<-list(sv_sig3=1.260,sv_sig5=1.935, snv_sig3=2.096, snv_sig8=4.390, hrdindex=2.195,indelmh=0.218)
-brca_sd<-list(sv_sig3=1.657,sv_sig5=1.483, snv_sig3=3.555, snv_sig8=3.179, hrdindex=0.750,indelmh=0.090)
-
 input_table <- read_tsv(args[['input']]) %>%
     select(-data_type) %>%
+    group_by(variable) %>%
+    mutate(
+        value = log(value + 1),
+        value = (value - mean(value)) / sd(value)
+    ) %>%
+    ungroup() %>%
     spread(variable, value) %>%
     select(
         patient,
@@ -122,14 +124,6 @@ input_table <- read_tsv(args[['input']]) %>%
         snv_signature_8 = `Signature 8`, 
         rearrangement_signature_3 = `Rearrangement Signature 3`, 
         rearrangement_signature_5 = `Rearrangement Signature 5`
-    ) %>%
-    mutate(
-    	norm_deletion_microhomology_proportion = (log(deletion_microhomology_proportion+1) - brca_means[['indelmh']])/ brca_sd[['indelmh']],
-    	norm_hrd_score = (log(hrd_score+1) - brca_means[['hrdindex']])/ brca_sd[['hrdindex']],
-    	norm_snv_signature_3 = (log(snv_signature_3+1) - brca_means[['snv_sig3']])/ brca_sd[['snv_sig3']],
-    	norm_snv_signature_8 = (log(snv_signature_8+1) - brca_means[['snv_sig8']])/ brca_sd[['snv_sig8']],
-    	norm_rearrangement_signature_3 = (log(rearrangement_signature_3+1) - brca_means[['sv_sig3']])/ brca_sd[['sv_sig3']],
-    	norm_rearrangement_signature_5 = (log(rearrangement_signature_5+1) - brca_means[['sv_sig5']])/ brca_sd[['sv_sig5']]
     )
 
 missing_data_rows <- input_table %>% apply(1, function(row) { any(is.na(row)) })

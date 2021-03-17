@@ -10,7 +10,7 @@ source dependencies/miniconda3/bin/activate dependencies
 
 snakemake
 
-#sh scripts/hrdetect/runDeconstructSigs.sh SHGSOC all
+sh scripts/hrdetect/runDeconstructSigs.sh SHGSOC all
 
 source dependencies/miniconda3/bin/deactivate 
 

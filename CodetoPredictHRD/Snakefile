@@ -7,7 +7,7 @@ import glob
 
 ### CONFIGS ###
 
-PROJECT_DIR = '/projects/ezhao_prj/analyses/hrdetect-pipeline'
+PROJECT_DIR = '/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline'
 PURDOM_BOOTSTRAP_ITERATIONS = '1000'
 SIGNIT_PATH = 'git/SignIT'
 HRDTOOLS_PATH = 'git/hrdtools'
@@ -22,8 +22,10 @@ def replace_newlines(input_string):
 
 target_functions = {}
 
-include: "projects/compass.smk"
-include: "projects/pog.smk"
+#include: "projects/compass.smk"
+#include: "projects/pog.smk"
+include: "projects/SHGSOC.smk"
+#include: "projects/SHGSOC85.smk"
 
 #######################
 ### Loading Targets ###
@@ -59,9 +61,9 @@ def get_aggregation_targets(wildcards):
     return(targets)
 
 target_path_endings = {
-    'snv_signatures': 'snv_signatures/signit_hrd_signatures.tsv',
+    'snv_signatures': 'snv_signatures/mutation_catalog.tsv',
     'microhomology_scores': 'indel_microhomology/microhomology_scores.tsv',
-    'sv_signatures': 'sv_signatures/sv_signit_hrd_signatures.tsv',
+    'sv_signatures': 'sv_signatures/sv_catalog.tsv',
     'hrd_scores': 'hrd_scores/hrd_score.tsv'
 }
 
@@ -71,8 +73,7 @@ target_path_endings = {
 
 rule all:
     input:
-        'output/compass/all/hrdetect/hrdetect_output_table.tsv',
-        'output/pog/all/hrdetect/hrdetect_output_table.tsv',
+        'output/SHGSOC/all/hrdetect/hrdetect_input_table.tsv'
 
 rule aggregation_paths:
     input:
@@ -85,6 +86,17 @@ rule aggregation_paths:
         f = open(output[0], 'w')
         f.write('\n'.join(input))
         f.close()
+
+#rule snv_count_matrix:
+#    input:
+#        get_aggregation_targets
+#    output:
+#        'output/{project}/{subproject}/hrdetect/agg_snv_catalog.tsv'
+#    log:
+#        'logs/{project}/{subproject}/hrdetect/{signature_type}_counts_matrix.log'
+#    shell:
+#         grep 'snv_signatures' {input} > output/${project}/${subproject}/hrdetect/snv_signatures_mutpaths.tsv        
+
 
 rule aggregate:
     input:
@@ -102,54 +114,54 @@ rule aggregate:
 
 rule mutation_catalogs:
     input:
-        'data/{project}/{subproject}/patients/{patient}/{sample}/somatic_snvs.vcf'
+        'data/{project}/{subproject}/patients/{patient}/{sample}/somatic_snvs.vcf',
     output:
         'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/mutation_catalog.tsv',
     log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/mutation_catalog.log'
+        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/mutation_catalog.log',
     shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/signatures/get_mutation_catalog.R -v {input} -c {output} -r hg19'
+        'Rscript ' + PROJECT_DIR + '/scripts/signatures/get_mutation_catalog.R -v {input} -c {output} -r GRCh38'
 
-rule snv_signatures_signit_exposures:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/mutation_catalog.tsv',
-    output:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.Rds',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.log',
-    shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_exposures.R -c {input} -o {output} -s ' + SIGNIT_PATH
+#rule snv_signatures_signit_exposures:
+ #   input:
+ #       'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/mutation_catalog.tsv',
+ #   output:
+ #       'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.Rds',
+ #   log:
+ #       'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.log',
+ #   shell:
+ #       'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_exposures.R -c {input} -o {output} -s ' + SIGNIT_PATH
 
-rule snv_signatures_signit_summary:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.Rds',
-    output:
-        exposure='output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.tsv',
-        fraction='output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary_fractions.tsv',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.log',
-    shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.exposure} --signit ' + SIGNIT_PATH + \
-        ' && Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.fraction} --fraction --signit ' + SIGNIT_PATH
+#rule snv_signatures_signit_summary:
+#    input:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_output.Rds',
+#    output:
+#        exposure='output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.tsv',
+#        fraction='output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary_fractions.tsv',
+#    log:
+#       'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.log',
+#    shell:
+#        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.exposure} --signit ' + SIGNIT_PATH + \
+#        ' && Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.fraction} --fraction --signit ' + SIGNIT_PATH
 
-rule snv_hrd_signatures:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.tsv',
-    output:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_hrd_signatures.tsv',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_hrd_signatures.log',
-    shell:
-        replace_newlines(
-            """ Rscript -e '
-                    library(tidyverse);
-                    read_tsv("{input}") %>%
-                    filter(signature %in% c("Signature 3", "Signature 8")) %>%
-                    select(signature, median_exposure) %>%
-                    spread(signature, median_exposure) %>% write_tsv("{output}")
-            '
-            """.replace('\n', ' ')
-        )
+#rule snv_hrd_signatures:
+#    input:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_exposure_summary.tsv',
+#    output:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_hrd_signatures.tsv',
+#    log:
+#        'logs/{project}/{subproject}/patients/{patient}/{sample}/snv_signatures/signit_hrd_signatures.log',
+#    shell:
+#        replace_newlines(
+#            """ Rscript -e '
+#                    library(tidyverse);
+#                    read_tsv("{input}") %>%
+#                    filter(signature %in% c("Signature 3", "Signature 8")) %>%
+#                    select(signature, median_exposure) %>%
+#                    spread(signature, median_exposure) %>% write_tsv("{output}")
+#            '
+#            """.replace('\n', ' ')
+#        )
 
 ##############################
 ### SV Mutation Signatures ###
@@ -165,46 +177,46 @@ rule sv_catalogs:
     shell:
         'Rscript ' + PROJECT_DIR + '/scripts/sv/calculate_sv_catalog.R -i {input} -o {output}'
 
-rule sv_signatures_signit_exposures:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_catalog.tsv',
-    output:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.Rds',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.log',
-    shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_exposures.R -c {input} -o {output} -r nikzainal_sv_signatures -s ' + SIGNIT_PATH
+#rule sv_signatures_signit_exposures:
+#    input:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_catalog.tsv',
+#    output:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.Rds',
+#    log:
+#        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.log',
+#    shell:
+#        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_exposures.R -c {input} -o {output} -r nikzainal_sv_signatures -s ' + SIGNIT_PATH
 
-rule sv_signatures_signit_summary:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.Rds',
-    output:
-        exposure='output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.tsv',
-        fraction='output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary_fractions.tsv',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.log',
-    shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.exposure} --signit ' + SIGNIT_PATH + \
-        ' && Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.fraction} --fraction --signit ' + SIGNIT_PATH
+#rule sv_signatures_signit_summary:
+#    input:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_output.Rds',
+#    output:
+#        exposure='output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.tsv',
+#        fraction='output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary_fractions.tsv',
+#    log:
+#        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.log',
+#    shell:
+#        'Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.exposure} --signit ' + SIGNIT_PATH + \
+#        ' && Rscript ' + PROJECT_DIR + '/scripts/signatures/signit_summary_table.R -i {input} -o {output.fraction} --fraction --signit ' + SIGNIT_PATH
 
-rule sv_hrd_signatures:
-    input:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.tsv',
-    output:
-        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_hrd_signatures.tsv',
-    log:
-        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_hrd_signatures.log',
-    shell:
-        replace_newlines(
-            """ Rscript -e '
-                    library(tidyverse);
-                    read_tsv("{input}") %>%
-                    filter(signature %in% c("Rearrangement Signature 3", "Rearrangement Signature 5")) %>%
-                    select(signature, median_exposure) %>%
-                    spread(signature, median_exposure) %>% write_tsv("{output}")
-            '
-            """.replace('\n', ' ')
-        )
+#rule sv_hrd_signatures:
+#    input:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_exposure_summary.tsv',
+#    output:
+#        'output/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_hrd_signatures.tsv',
+#    log:
+#        'logs/{project}/{subproject}/patients/{patient}/{sample}/sv_signatures/sv_signit_hrd_signatures.log',
+#    shell:
+#        replace_newlines(
+#            """ Rscript -e '
+#                    library(tidyverse);
+#                    read_tsv("{input}") %>%
+#                    filter(signature %in% c("Rearrangement Signature 3", "Rearrangement Signature 5")) %>%
+#                    select(signature, median_exposure) %>%
+#                    spread(signature, median_exposure) %>% write_tsv("{output}")
+#            '
+#            """.replace('\n', ' ')
+#        )
 
 ###########################
 ### Indel Microhomology ###
@@ -242,7 +254,7 @@ rule hrd_scores:
     log:
         'logs/{project}/{subproject}/patients/{patient}/{sample}/hrd_scores/hrd_score.log'
     shell:
-        'Rscript scripts/hrdscore/run_test.R -l {input} -o {output} -r hg19 --hrdtools ' + HRDTOOLS_PATH
+        'Rscript scripts/hrdscore/run_test.R -l {input} -o {output} -r GRCh38 --hrdtools ' + HRDTOOLS_PATH
 
 #######################
 ### HRDetect Scores ###
@@ -259,17 +271,17 @@ rule hrdetect_input_table:
     log:
         'logs/{project}/{subproject}/hrdetect/hrdetect_input_table.log',
     shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/hrdetect/hrdetect_input_table.R -i {input.snv} -i {input.sv} -i {input.hrd} -i {input.microhomology} -o {output}'
+        'Rscript ' + PROJECT_DIR + '/scripts/hrdetect/hrdetect_input_table.R -i {input.hrd} -i {input.microhomology} -o {output}'
 
-rule hrdetect_output_table:
-    input:
-        'output/{project}/{subproject}/hrdetect/hrdetect_input_table.tsv',
-    output:
-        'output/{project}/{subproject}/hrdetect/hrdetect_output_table.tsv',
-    log:
-        'output/{project}/{subproject}/hrdetect/hrdetect_output_table.tsv',
-    shell:
-        'Rscript ' + PROJECT_DIR + '/scripts/hrdetect/compute_hrdetect.R -i {input} -o {output}'
+#rule hrdetect_output_table:
+#    input:
+#        'output/{project}/{subproject}/hrdetect/hrdetect_input_table.tsv',
+#    output:
+#        'output/{project}/{subproject}/hrdetect/hrdetect_output_table.tsv',
+#    log:
+#        'output/{project}/{subproject}/hrdetect/hrdetect_output_table.tsv',
+#    shell:
+#        'Rscript ' + PROJECT_DIR + '/scripts/hrdetect/compute_hrdetect.R -i {input} -o {output}'
 
 #########################
 ### Report Generation ###

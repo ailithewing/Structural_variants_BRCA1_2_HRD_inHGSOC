@@ -1,5 +1,11 @@
 ' calculate_sv_catalog.R
 
+Given a set of structural variants, this script computes the SV classification based on
+SV type, size, and clustering. It follows the methodology described by
+Nik-Zainal (2016), https://www.nature.com/articles/nature17676.
+
+You can then run signatures/signit_exposures.R, using the SV catalog as input.
+
 Usage: calculate_sv_catalog.R -i INPUT -o OUTPUT
 
 Options:
@@ -11,14 +17,27 @@ Options:
                                 type: SV type with values DEL, DUP, INV, TRA
     
     -o --output OUTPUT      Path to output mutation catalog table
+
+Examples:
+    Rscript sv/calculate_sv_catalog.R -i sv_calls.tsv -o sv_catalog.tsv
 ' -> doc
 
 library(docopt)
 args <- docopt(doc)
 
-library('tidyverse')
-library('copynumber')
-library('GenomicRanges')
+library('tidyverse',lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library")
+library('GenomicRanges',lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library")
+
+pcf_path="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/pcf38"
+source(paste(pcf_path,"/pcf38.R",sep=""))
+source(paste(pcf_path,"/numericChrom.R",sep=""))
+source(paste(pcf_path,"/getArms.R",sep=""))
+source(paste(pcf_path,"/getArmandChromStop.R",sep=""))
+source(paste(pcf_path,"/numericArms.R",sep=""))
+source(paste(pcf_path,"/getMad.R",sep=""))
+source(paste(pcf_path,"/medianFilter.R",sep=""))
+load(paste(pcf_path,"/sysdata.rda",sep=""))
+load(paste(pcf_path,"/hg38_sub.RData",sep=""))
 
 SV_BREAK_NAMES <- c('1-10kb', '10-100kb', '100kb-1Mb', '1Mb-10Mb', '>10Mb')
 SV_LENGTH_BREAKS <- c(1000, 10000, 100000, 1000000, 10000000, Inf)
@@ -54,7 +73,11 @@ label_clustered <- function(sv_table) {
 
     clustered_regions <- breakpoints %>% 
         dplyr::select(chr, pos, distance) %>% 
-        as.data.frame %>%
+        as.data.frame 
+
+    clustered_regions <- breakpoints %>%
+        dplyr::select(chr, pos, distance) %>%
+        as.data.frame %>% 
         pcf(kmin = 10, gamma = 25) %>%
         filter(mean < mean_distance / 10) %>%
         dplyr::select(chr = chrom, start = start.pos, end = end.pos) 

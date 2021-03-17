@@ -32,7 +32,6 @@ print(args)
 
 library(tidyverse,lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/")
 library(stringr,lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/")
-library(BSgenome.Hsapiens.NCBI.GRCh38,lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/")
 
 if (! is.null(args[['m']])) {
     mutations <- read_tsv(args[['m']], 
@@ -68,23 +67,20 @@ if (! is.null(args[['m']])) {
 }
 
 print(mutations %>% as_tibble)
+
 library(deconstructSigs,lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/")
 
 if (!is.null(args[['r']])) {
     if (args[['r']] == 'GRCh38') {
-
-	mutations<-mutations[setdiff(rownames(mutations),grep("v",mutations$chr)),]
-        mutations$chr<-gsub("chr","",mutations$chr)
-        mutations$chr<-gsub("^M$","MT",mutations$chr)
-	mutations<-mutations[mutations[,1] %in% as.character(c(1:22,"X")),]
-        
-	catalog <- mut.to.sigs.input(mut.ref = mutations,
-                                    sample.id = 'sample',
-                                    chr = 'chr',
-                                    pos = 'pos',
-                                    ref = 'ref',
-                                    alt = 'alt',
-                                    bsg = BSgenome.Hsapiens.NCBI.GRCh38)
+        library(BSgenome.Hsapiens.NCBI.GRCh38,lib.loc="/exports/igmm/eddie/HGS-OvarianCancerA-SGP-WGS/signatures/HRDetect/hrdetect-pipeline/dependencies/miniconda3/envs/dependencies/lib/R/library/")
+	save(mutations,file="mutations.RData")
+#        catalog <- mut.to.sigs.input(mut.ref = mutations,
+ #                                   sample.id = 'sample',
+  #                                  chr = 'chr',
+   #                                 pos = 'pos',
+    #                                ref = 'ref',
+     #                               alt = 'alt',
+      #                              bsg = BSgenome.Hsapiens.NCBI.GRCh38)
     } else {
         catalog <- mut.to.sigs.input(mut.ref = mutations,
                                     sample.id = 'sample',

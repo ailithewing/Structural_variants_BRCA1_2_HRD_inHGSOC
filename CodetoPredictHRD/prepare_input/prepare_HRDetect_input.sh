@@ -9,7 +9,7 @@
 MODULEPATH=$MODULEPATH:/exports/igmm/software/etc/el7/modules
 
 module load igmm/apps/vcftools/0.1.13 
-module load R/3.3.2 
+module load igmm/apps/R/3.5.1 
 module load igmm/apps/bcftools/1.9
 
 PARAMS=$1
@@ -23,7 +23,7 @@ echo $SAMPLE
 mkdir $SAMPLE
 cd $SAMPLE
 
-bcftools filter -i 'AF>0.1 & FILTER="PASS"' ${SNV} > tmp.vcf   
+bcftools filter -i 'INFO/AF>0.1 & FILTER="PASS"' ${SNV} > tmp.vcf   
 
 vcftools --vcf tmp.vcf --remove-indels  --remove-filtered-all --recode --out somatic_snvs
 
@@ -32,7 +32,7 @@ vcftools --vcf tmp.vcf --keep-only-indels  --remove-filtered-all --recode --out 
 rm tmp.vcf
 
 #segments.tsv comes from DFExtract.results and is made in preprocessing to hrdtools.
-rsync -av ${LOH} segments_dat.tsv
+rsync -rv ${LOH} segments_dat.tsv
 cat ../loh_header segments_dat.tsv > segments.tsv
 
 #SVs
